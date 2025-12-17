@@ -1,3 +1,15 @@
+"""
+Favorites Service - Manage user favorite routes
+"""
+
+import logging
+from typing import Dict, Optional, List, Any
+from datetime import datetime
+from sqlalchemy import select
+
+from src.database.connection import AsyncSessionLocal
+from src.models.user_models import FavoriteRoute
+
 logger = logging.getLogger(__name__)
 
 
@@ -17,7 +29,7 @@ class FavoritesService:
         vehicle_id: Optional[int] = None,
         vehicle_range_km: Optional[int] = None,
         battery_capacity_kwh: Optional[int] = None,
-    ) -> Optional[Dict[str, any]]:
+    ) -> Optional[Dict[str, Any]]:
         """
         Save a new favorite route for user.
 
@@ -80,7 +92,7 @@ class FavoritesService:
 
             return self._format_favorite(new_favorite)
 
-    async def get_user_favorites(self, user_id: int) -> List[Dict[str, any]]:
+    async def get_user_favorites(self, user_id: int) -> List[Dict[str, Any]]:
         """
         Get all favorite routes for a user.
 
@@ -102,7 +114,7 @@ class FavoritesService:
 
     async def get_favorite_by_id(
         self, favorite_id: int, user_id: int
-    ) -> Optional[Dict[str, any]]:
+    ) -> Optional[Dict[str, Any]]:
         """
         Get a specific favorite route.
 
@@ -159,7 +171,7 @@ class FavoritesService:
 
     async def update_favorite(
         self, favorite_id: int, user_id: int, route_name: Optional[str] = None
-    ) -> Optional[Dict[str, any]]:
+    ) -> Optional[Dict[str, Any]]:
         """
         Update a favorite route (currently only supports renaming).
 
@@ -192,7 +204,7 @@ class FavoritesService:
             logger.info(f"Favorite route {favorite_id} updated by user {user_id}")
             return self._format_favorite(favorite)
 
-    def _format_favorite(self, favorite: FavoriteRoute) -> Dict[str, any]:
+    def _format_favorite(self, favorite: FavoriteRoute) -> Dict[str, Any]:
         """
         Format FavoriteRoute model to dictionary.
 

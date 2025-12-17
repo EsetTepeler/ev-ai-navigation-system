@@ -7,7 +7,7 @@ import logging
 from fastapi import APIRouter
 
 # Local imports (services initialized in orchestrator)
-import orchestrator
+from src.services.service_container import services
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +27,7 @@ async def test_database():
         DatabaseException: If connection fails
     """
     try:
-        return await orchestrator.database_service.test_connection()
+        return await services.database_service.test_connection()
     except Exception as e:
         from src.exceptions.custom_exceptions import DatabaseException
 
@@ -48,7 +48,7 @@ async def get_redis_status():
         RedisException: If status check fails
     """
     try:
-        return await orchestrator.redis_service.get_connection_status()
+        return await services.redis_service.get_connection_status()
     except Exception as e:
         from src.exceptions.custom_exceptions import RedisException
 

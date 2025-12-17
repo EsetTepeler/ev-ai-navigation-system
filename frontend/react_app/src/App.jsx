@@ -5,8 +5,12 @@ import RouteForm from './components/RouteForm'
 import { getFavorites, toggleFavorite, isFavorite } from './utils/favorites'
 import toast, { Toaster } from 'react-hot-toast'
 import './modern-styles.css'
+import { AuthProvider, useAuth } from './context/AuthContext'
+import { AuthModal } from './components/AuthModals'
+import NavigationMode from './components/NavigationMode'
 
-export default function App() {
+// Separate component for the main app content to use AuthContext
+const AppContent = () => {
   const [vehicles, setVehicles] = useState([])
   const [filteredVehicles, setFilteredVehicles] = useState([])
   const [loading, setLoading] = useState(false)
@@ -14,12 +18,17 @@ export default function App() {
   const [chatMessages, setChatMessages] = useState([])
   const [currentMessage, setCurrentMessage] = useState('')
   const [selectedVehicle, setSelectedVehicle] = useState(null)
-  const [viewMode, setViewMode] = useState('map') // 'map', 'list', 'route', 'favorites'
+  const [viewMode, setViewMode] = useState('map') // 'map', 'list', 'route', 'favorites', 'navigation'
   const [chargingStations, setChargingStations] = useState([])
   const [stationsLoading, setStationsLoading] = useState(false)
   const [powerFilter, setPowerFilter] = useState('all') // 'all', 'fast', 'normal'
   const [favorites, setFavorites] = useState([])
   const [showFavoritesModal, setShowFavoritesModal] = useState(false)
+
+  // Auth State
+  const { user, isAuthenticated, logout } = useAuth()
+  const [showAuthModal, setShowAuthModal] = useState(false)
+  const [authType, setAuthType] = useState('login')
 
   // Route planning state
   const [routeForm, setRouteForm] = useState({
@@ -172,6 +181,30 @@ export default function App() {
         toast.success(`Rota hazır! ${distance.toFixed(0)} km - ${numStops} şarj durağı`, {
           duration: 5000,
         })
+        // Ask if user wants to start navigation immediately
+        toast((t) => (
+          <span>
+            Rota hazır!
+            <button
+              onClick={() => {
+                toast.dismiss(t.id)
+                setViewMode('navigation')
+              }}
+              style={{
+                marginLeft: '8px',
+                padding: '4px 8px',
+                background: '#00d4ff',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer'
+              }}
+            >
+              Navigasyonu Başlat 🚀
+            </button>
+          </span>
+        ), { duration: 6000 })
+
         setViewMode('map')
       } else {
         toast.error('Rota hesaplanamadı: ' + (result.message || 'Bilinmeyen hata'))
@@ -195,12 +228,12 @@ export default function App() {
     const vehicleName = vehicle ? `${vehicle.manufacturer} ${vehicle.model}` : 'Araç'
 
     if (newStatus) {
-      toast.success(`${vehicleName} favorilere eklendi!`, {
+      toast.success(`${vehicleName} favorilere eklendi! ❤️`, {
         duration: 3000,
       })
     } else {
       toast(`${vehicleName} favorilerden çıkarıldı`, {
-        icon: '♥',
+        icon: '💔',
         duration: 3000,
       })
     }
@@ -240,6 +273,14 @@ export default function App() {
           },
         }}
       />
+
+      {/* Navigation Mode Overlay */}
+      {viewMode === 'navigation' && (
+        <NavigationMode
+          route={routeResult}
+          onEndNavigation={() => setViewMode('map')}
+        />
+      )}
 
       {/* Header */}
       <header className="app-header">
@@ -297,6 +338,27 @@ export default function App() {
           >
             Route
           </button>
+
+          {/* Auth Buttons */}
+          {isAuthenticated ? (
+            <button
+              className="auth-btn-header"
+              onClick={logout}
+              title="Çıkış Yap"
+            >
+              {user?.username || user?.email || 'Hesabım'} (Çıkış)
+            </button>
+          ) : (
+            <button
+              className="auth-btn-header"
+              onClick={() => {
+                setAuthType('login')
+                setShowAuthModal(true)
+              }}
+            >
+              Giriş Yap
+            </button>
+          )}
         </div>
       </header>
 
@@ -355,7 +417,7 @@ export default function App() {
                     <option value="fast">Hızlı Şarj (≥50kW) ({chargingStations.filter(s => s.power_kw >= 50).length})</option>
                     <option value="normal">Normal Şarj (&lt;50kW) ({chargingStations.filter(s => s.power_kw < 50).length})</option>
                   </select>
-                  {stationsLoading && <span className="loading-indicator">Yükleniyor...</span>}
+                  {stationsLoading && <span className="loading-indicator">⏳ Yükleniyor...</span>}
                 </div>
               </div>
 
@@ -650,7 +712,7 @@ export default function App() {
               {favorites.length === 0 ? (
                 <div className="empty-favorites">
                   <p>Henüz favori araç eklemediniz</p>
-                  <p className="hint">Araç kartlarındaki ikon tıklayarak favorilere ekleyebilirsiniz</p>
+                  <p className="hint">Araç kartlarındaki 🤍 ikonuna tıklayarak favorilere ekleyebilirsiniz</p>
                 </div>
               ) : (
                 <div className="favorites-grid">
@@ -684,6 +746,22 @@ export default function App() {
           </div>
         </div>
       )}
+
+      {/* Auth Modal */}
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        type={authType}
+        onSwitchType={() => setAuthType(authType === 'login' ? 'register' : 'login')}
+      />
     </div>
+  )
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   )
 }

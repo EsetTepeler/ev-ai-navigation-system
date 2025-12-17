@@ -58,12 +58,12 @@ class AuthService:
             logger.error(f"Password verification error: {e}")
             return False
 
-    def create_access_token(self, user_id: int, email: str) -> str:
+    def create_access_token(self, user_id: str, email: str) -> str:
         """
         Create a JWT access token.
 
         Args:
-            user_id: User's database ID
+            user_id: User's ID
             email: User's email address
 
         Returns:
@@ -74,12 +74,12 @@ class AuthService:
         token = jwt.encode(payload, self.secret_key, algorithm=self.algorithm)
         return token
 
-    def create_refresh_token(self, user_id: int) -> str:
+    def create_refresh_token(self, user_id: str) -> str:
         """
         Create a JWT refresh token.
 
         Args:
-            user_id: User's database ID
+            user_id: User's ID
 
         Returns:
             JWT refresh token string
@@ -109,7 +109,7 @@ class AuthService:
             logger.warning(f"Invalid token: {e}")
             return None
 
-    def get_user_from_token(self, token: str) -> Optional[int]:
+    def get_user_from_token(self, token: str) -> Optional[str]:
         """
         Extract user ID from a valid token.
 
@@ -121,8 +121,5 @@ class AuthService:
         """
         payload = self.verify_token(token)
         if payload:
-            try:
-                return int(payload.get("sub"))
-            except (ValueError, TypeError):
-                return None
+            return payload.get("sub")
         return None

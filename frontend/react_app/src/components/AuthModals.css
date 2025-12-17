@@ -1,0 +1,105 @@
+/* Auth Modal Styles */
+.auth-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(8px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    animation: fadeIn 0.3s ease;
+}
+
+.auth-modal {
+    background: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(24px);
+    border: 2px solid rgba(0, 212, 255, 0.3);
+    border-radius: 24px;
+    padding: 32px;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 100px rgba(0, 212, 255, 0.2);
+    position: relative;
+    animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.auth-close-btn {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: transparent;
+    border: none;
+    color: #cbd5e1;
+    font-size: 24px;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.auth-close-btn:hover {
+    color: #ff0066;
+}
+
+.auth-modal h2 {
+    color: #f1f5f9;
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 24px;
+    text-align: center;
+    background: linear-gradient(135deg, #00d4ff 0%, #00ff88 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.auth-submit-btn {
+    margin-top: 8px;
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #00d4ff 0%, #7c3aed 100%);
+    border: none;
+    border-radius: 12px;
+    color: white;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.auth-submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 212, 255, 0.3);
+}
+
+.auth-submit-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.auth-footer {
+    margin-top: 24px;
+    text-align: center;
+    color: #94a3b8;
+    font-size: 14px;
+}
+
+.auth-switch-btn {
+    background: transparent;
+    border: none;
+    color: #00d4ff;
+    font-weight: 600;
+    cursor: pointer;
+    margin-left: 8px;
+    padding: 0;
+    font-size: 14px;
+}
+
+.auth-switch-btn:hover {
+    text-decoration: underline;
+}

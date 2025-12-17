@@ -202,7 +202,7 @@ async def refresh_token(request: TokenRefreshRequest):
 
 
 @router.get("/me")
-async def get_current_user_info(user_id: Annotated[int, Depends(get_current_user)]):
+async def get_current_user_info(user_id: Annotated[str, Depends(get_current_user)]):
     """
     Get current authenticated user's information.
 

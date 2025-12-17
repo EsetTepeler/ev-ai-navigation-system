@@ -16,6 +16,17 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import ValidationError
 
+# Import after path setup
+from src.exceptions.custom_exceptions import EVNavigationException
+from src.middleware.error_handlers import (
+    ev_navigation_exception_handler,
+    generic_exception_handler,
+    validation_exception_handler,
+)
+from src.services.database_service import DatabaseService
+from src.services.redis_service import RedisService
+from src.services.service_container import services as global_services
+
 # Path setup
 current_dir = Path(__file__).parent
 src_dir = current_dir / "src"
@@ -30,32 +41,33 @@ load_dotenv()
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Import after path setup
-from src.exceptions.custom_exceptions import EVNavigationException
-from src.middleware.error_handlers import (
-    ev_navigation_exception_handler,
-    generic_exception_handler,
-    http_exception_handler,
-    validation_exception_handler,
-)
-from src.services.database_service import DatabaseService
-from src.services.redis_service import RedisService
 
 # Initialize core services
 database_service = DatabaseService()
 redis_service = RedisService()
+
+# Register services in container
+global_services.database_service = database_service
+global_services.redis_service = redis_service
+
 logger.info("Core services initialized")
 
 
 # Route import helper
 def import_route(route_name):
     """Import route with error handling."""
+    print(f"Attempting to import {route_name}...")
     try:
         module = __import__(f"routes.{route_name}", fromlist=[route_name])
-        logger.info(f"✓ {route_name} loaded")
+        logger.info(f"[OK] {route_name} loaded")
+        print(f"[OK] {route_name} loaded")
         return module.router, True
     except Exception as e:
-        logger.warning(f"✗ {route_name} unavailable: {e}")
+        logger.warning(f"[FAIL] {route_name} unavailable: {e}")
+        print(f"[FAIL] {route_name} unavailable: {e}")
+        import traceback
+
+        traceback.print_exc()
         return None, False
 
 
@@ -130,4 +142,4 @@ def root():
 
 
 if __name__ == "__main__":
-    uvicorn.run("orchestrator:app", host="0.0.0.0", port=8000, reload=False)
+    uvicorn.run(app, host="0.0.0.0", port=8000, reload=False)

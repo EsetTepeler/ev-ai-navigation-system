@@ -2,17 +2,17 @@ import axios from 'axios'
 
 const base = import.meta.env.VITE_API_BASE || 'http://localhost:8000'
 
-export async function getVehicles(){
+export async function getVehicles() {
   const res = await axios.get(`${base}/api/vehicles/`)
   // Direct array response from CSV
   return Array.isArray(res.data) ? res.data : (res.data?.vehicles || res.data?.items || [])
 }
 
-export async function aiChat(prompt){
-  try{
-    const res = await axios.post(`${base}/api/ai-chat`, {message: prompt})
+export async function aiChat(prompt) {
+  try {
+    const res = await axios.post(`${base}/api/ai-chat`, { message: prompt })
     return res.data
-  }catch(err){
+  } catch (err) {
     console.error('aiChat err', err?.response?.data || err.message)
     return { error: true, message: err?.response?.data || err.message }
   }
@@ -21,7 +21,7 @@ export async function aiChat(prompt){
 export async function getChargingStations(filters = {}) {
   try {
     const params = new URLSearchParams()
-    
+
     if (filters.lat && filters.lon) {
       params.append('lat', filters.lat)
       params.append('lon', filters.lon)
@@ -30,7 +30,7 @@ export async function getChargingStations(filters = {}) {
     if (filters.city) params.append('city', filters.city)
     if (filters.min_power) params.append('min_power', filters.min_power)
     if (filters.max_power) params.append('max_power', filters.max_power)
-    
+
     const response = await axios.get(`${base}/api/charging/stations?${params.toString()}`)
     return response.data
   } catch (error) {
@@ -51,11 +51,42 @@ export async function planRoute(routeData) {
     if (routeData.current_battery_percent) params.append('current_battery_percent', routeData.current_battery_percent)
     if (routeData.min_charge_percent) params.append('min_charge_percent', routeData.min_charge_percent)
     if (routeData.preferred_charge_percent) params.append('preferred_charge_percent', routeData.preferred_charge_percent)
-    
+
     const response = await axios.post(`${base}/api/navigation/simple-route?${params.toString()}`)
     return response.data
   } catch (error) {
     console.error('Route planning error:', error)
     throw error
+  }
+}
+
+export async function loginUser(credentials) {
+  try {
+    const res = await axios.post(`${base}/api/auth/login`, credentials)
+    return res.data
+  } catch (err) {
+    console.error('Login error:', err)
+    throw err.response?.data || err
+  }
+}
+
+export async function registerUser(userData) {
+  try {
+    const res = await axios.post(`${base}/api/auth/register`, userData)
+    return res.data
+  } catch (err) {
+    console.error('Register error:', err)
+    throw err.response?.data || err
+  }
+}
+
+export async function getCurrentUser(token) {
+  try {
+    const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {}
+    const res = await axios.get(`${base}/api/auth/me`, config)
+    return res.data
+  } catch (err) {
+    console.error('Get current user error:', err)
+    throw err.response?.data || err
   }
 }
