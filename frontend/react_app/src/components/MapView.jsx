@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap, Circle, LayersControl } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap, LayersControl } from 'react-leaflet';
 import L from 'leaflet';
-import toast from 'react-hot-toast';
-import { getCurrentPosition, GeolocationError } from '../utils/geolocation';
 import 'leaflet/dist/leaflet.css';
+import { getCurrentPosition, GeolocationError } from '../utils/geolocation';
+import toast from 'react-hot-toast';
 
 const { BaseLayer, Overlay } = LayersControl;
 
@@ -73,7 +73,7 @@ const MapView = ({
   const [mapZoom, setMapZoom] = useState(zoom)
   const [showTraffic, setShowTraffic] = useState(true)
   const [userLocation, setUserLocation] = useState(null)
-  const [loadingUserLocation, setLoadingUserLocation] = useState(false)
+  const [isLoadingLocation, setIsLoadingLocation] = useState(false)
 
   useEffect(() => {
     if (selectedVehicle && selectedVehicle.location) {
@@ -94,137 +94,91 @@ const MapView = ({
     }
   }, [route])
 
-  // Handle user location detection
-  const handleShowMyLocation = async () => {
-    setLoadingUserLocation(true);
-    const loadingToast = toast.loading('Konumunuz alınıyor...');
+  // Get user's current location
+  const handleGetCurrentLocation = async () => {
+    setIsLoadingLocation(true);
+    const loadingToast = toast.loading('📍 Konumunuz alınıyor...');
 
     try {
       const position = await getCurrentPosition();
-      setUserLocation(position);
-      setMapCenter([position.lat, position.lon]);
-      setMapZoom(13);
+      const { lat, lon } = position;
+
+      setUserLocation([lat, lon]);
+      setMapCenter([lat, lon]);
+      setMapZoom(14);
 
       toast.dismiss(loadingToast);
-      toast.success('Konumunuz tespit edildi!', { duration: 3000 });
+      toast.success('✅ Konumunuz tespit edildi!', { duration: 3000 });
     } catch (err) {
       console.error('Geolocation error:', err);
       toast.dismiss(loadingToast);
 
+      // Handle different error types
       switch (err.type) {
         case GeolocationError.PERMISSION_DENIED:
-          toast.error('Konum izni reddedildi', { duration: 5000 });
+          toast.error('❌ Konum izni reddedildi', { duration: 5000 });
           break;
         case GeolocationError.POSITION_UNAVAILABLE:
-          toast.error('Konum servisi kullanılamıyor', { duration: 4000 });
+          toast.error('❌ Konum servisi kullanılamıyor', { duration: 4000 });
           break;
         case GeolocationError.TIMEOUT:
-          toast.error('Konum tespiti zaman aşımına uğradı', { duration: 4000 });
+          toast.error('⏱️ Konum tespiti zaman aşımına uğradı', { duration: 4000 });
           break;
         case GeolocationError.NOT_SUPPORTED:
-          toast.error('Tarayıcınız konum servislerini desteklemiyor', { duration: 5000 });
+          toast.error('❌ Tarayıcınız konum servislerini desteklemiyor', { duration: 5000 });
           break;
         default:
-          toast.error('Konum alınamadı', { duration: 4000 });
+          toast.error('❌ Konum alınamadı', { duration: 4000 });
       }
     } finally {
-      setLoadingUserLocation(false);
+      setIsLoadingLocation(false);
     }
   };
 
   return (
     <div style={{ height: '100%', width: '100%', position: 'relative' }}>
-      {/* Button Container */}
-      <div style={{
-        position: 'absolute',
-        top: '20px',
-        right: '20px',
-        zIndex: 1001,
-        display: 'flex',
-        gap: '12px'
-      }}>
-        {/* User Location Button */}
-        <button
-          onClick={handleShowMyLocation}
-          disabled={loadingUserLocation}
-          style={{
-            backgroundColor: userLocation ? '#3b82f6' : 'rgba(15, 23, 42, 0.85)',
-            color: userLocation ? 'white' : '#e2e8f0',
-            border: '2px solid',
-            borderColor: userLocation ? '#3b82f6' : 'rgba(59, 130, 246, 0.3)',
-            padding: '12px 24px',
-            borderRadius: '12px',
-            fontSize: '14px',
-            fontWeight: '700',
-            cursor: loadingUserLocation ? 'not-allowed' : 'pointer',
-            boxShadow: userLocation
-              ? '0 8px 24px rgba(59, 130, 246, 0.4)'
-              : '0 4px 16px rgba(0, 0, 0, 0.3)',
-            backdropFilter: 'blur(10px)',
-            transition: 'all 0.3s ease',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            opacity: loadingUserLocation ? 0.6 : 1
-          }}
-          onMouseEnter={(e) => {
-            if (!loadingUserLocation) {
-              e.target.style.transform = 'translateY(-2px)';
-              e.target.style.boxShadow = userLocation
-                ? '0 12px 32px rgba(59, 130, 246, 0.5)'
-                : '0 8px 24px rgba(0, 0, 0, 0.4)';
-            }
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.transform = 'translateY(0)';
-            e.target.style.boxShadow = userLocation
-              ? '0 8px 24px rgba(59, 130, 246, 0.4)'
-              : '0 4px 16px rgba(0, 0, 0, 0.3)';
-          }}
-        >
-          <span style={{ fontSize: '18px' }}>{loadingUserLocation ? 'Loading...' : 'Location'}</span>
-          <span>{userLocation ? 'Konumum' : 'Konumumu Göster'}</span>
-        </button>
-
-        {/* Traffic Toggle Button */}
-        <button
-          onClick={() => setShowTraffic(!showTraffic)}
-          style={{
-            backgroundColor: showTraffic ? '#00d4ff' : 'rgba(15, 23, 42, 0.85)',
-            color: showTraffic ? '#0f172a' : '#e2e8f0',
-            border: '2px solid',
-            borderColor: showTraffic ? '#00d4ff' : 'rgba(0, 212, 255, 0.3)',
-            padding: '12px 24px',
-            borderRadius: '12px',
-            fontSize: '14px',
-            fontWeight: '700',
-            cursor: 'pointer',
-            boxShadow: showTraffic
-              ? '0 8px 24px rgba(0, 212, 255, 0.4)'
-              : '0 4px 16px rgba(0, 0, 0, 0.3)',
-            backdropFilter: 'blur(10px)',
-            transition: 'all 0.3s ease',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}
-          onMouseEnter={(e) => {
-            e.target.style.transform = 'translateY(-2px)';
-            e.target.style.boxShadow = showTraffic
-              ? '0 12px 32px rgba(0, 212, 255, 0.5)'
-              : '0 8px 24px rgba(0, 0, 0, 0.4)';
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.transform = 'translateY(0)';
-            e.target.style.boxShadow = showTraffic
-              ? '0 8px 24px rgba(0, 212, 255, 0.4)'
-              : '0 4px 16px rgba(0, 0, 0, 0.3)';
-          }}
-        >
-          <span style={{ fontSize: '18px' }}>{showTraffic ? 'Traffic' : 'Traffic'}</span>
-          <span>{showTraffic ? 'Trafik Aktif' : 'Trafiği Göster'}</span>
-        </button>
-      </div>
+      {/* Traffic Toggle Button */}
+      <button
+        onClick={() => setShowTraffic(!showTraffic)}
+        style={{
+          position: 'absolute',
+          top: '20px',
+          right: '20px',
+          zIndex: 1001,
+          backgroundColor: showTraffic ? '#00d4ff' : 'rgba(15, 23, 42, 0.85)',
+          color: showTraffic ? '#0f172a' : '#e2e8f0',
+          border: '2px solid',
+          borderColor: showTraffic ? '#00d4ff' : 'rgba(0, 212, 255, 0.3)',
+          padding: '12px 24px',
+          borderRadius: '12px',
+          fontSize: '14px',
+          fontWeight: '700',
+          cursor: 'pointer',
+          boxShadow: showTraffic
+            ? '0 8px 24px rgba(0, 212, 255, 0.4)'
+            : '0 4px 16px rgba(0, 0, 0, 0.3)',
+          backdropFilter: 'blur(10px)',
+          transition: 'all 0.3s ease',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px'
+        }}
+        onMouseEnter={(e) => {
+          e.target.style.transform = 'translateY(-2px)';
+          e.target.style.boxShadow = showTraffic
+            ? '0 12px 32px rgba(0, 212, 255, 0.5)'
+            : '0 8px 24px rgba(0, 0, 0, 0.4)';
+        }}
+        onMouseLeave={(e) => {
+          e.target.style.transform = 'translateY(0)';
+          e.target.style.boxShadow = showTraffic
+            ? '0 8px 24px rgba(0, 212, 255, 0.4)'
+            : '0 4px 16px rgba(0, 0, 0, 0.3)';
+        }}
+      >
+        <span style={{ fontSize: '18px' }}>{showTraffic ? '🚦' : '🚗'}</span>
+        <span>{showTraffic ? 'Trafik Aktif' : 'Trafiği Göster'}</span>
+      </button>
 
       <MapContainer
         center={mapCenter}
@@ -249,42 +203,6 @@ const MapView = ({
             opacity={0.6}
             zIndex={1000}
           />
-        )}
-
-        {/* User Location Marker */}
-        {userLocation && (
-          <>
-            <Circle
-              center={[userLocation.lat, userLocation.lon]}
-              radius={userLocation.accuracy}
-              pathOptions={{
-                color: '#3b82f6',
-                fillColor: '#3b82f6',
-                fillOpacity: 0.1,
-                weight: 2
-              }}
-            />
-            <Marker
-              position={[userLocation.lat, userLocation.lon]}
-              icon={createCustomIcon('#3b82f6')} // Blue for user location
-            >
-              <Popup>
-                <div style={{ minWidth: '200px' }}>
-                  <h3 style={{ margin: '0 0 10px 0', fontSize: '16px', fontWeight: 'bold' }}>
-                    Mevcut Konumunuz
-                  </h3>
-                  <div style={{ fontSize: '14px', lineHeight: '1.6' }}>
-                    <p style={{ margin: '5px 0' }}>
-                      <strong>Konum:</strong> {userLocation.lat.toFixed(5)}, {userLocation.lon.toFixed(5)}
-                    </p>
-                    <p style={{ margin: '5px 0' }}>
-                      <strong>Doğruluk:</strong> ±{Math.round(userLocation.accuracy)}m
-                    </p>
-                  </div>
-                </div>
-              </Popup>
-            </Marker>
-          </>
         )}
 
         {/* Charging stations markers */}
@@ -359,6 +277,30 @@ const MapView = ({
           </Marker>
         ))}
 
+        {/* User location marker */}
+        {userLocation && (
+          <Marker
+            position={userLocation}
+            icon={createCustomIcon('#00ff88')} // Bright green for user location
+          >
+            <Popup>
+              <div style={{ minWidth: '150px' }}>
+                <h3 style={{ margin: '0 0 10px 0', fontSize: '16px', fontWeight: 'bold' }}>
+                  📍 Konumunuz
+                </h3>
+                <div style={{ fontSize: '14px' }}>
+                  <p style={{ margin: '5px 0' }}>
+                    Lat: {userLocation[0].toFixed(6)}
+                  </p>
+                  <p style={{ margin: '5px 0' }}>
+                    Lon: {userLocation[1].toFixed(6)}
+                  </p>
+                </div>
+              </div>
+            </Popup>
+          </Marker>
+        )}
+
         {/* Route polyline (if route data exists) */}
         {route && route.route_coordinates && route.route_coordinates.length > 1 && (
           <Polyline
@@ -379,7 +321,7 @@ const MapView = ({
             <Popup>
               <div style={{ minWidth: '250px' }}>
                 <h3 style={{ margin: '0 0 10px 0', fontSize: '16px', fontWeight: 'bold', color: '#667eea' }}>
-                  Şarj Durağı {index + 1}: {stop.name || 'Şarj İstasyonu'}
+                  🔌 Şarj Durağı {index + 1}: {stop.name || 'Şarj İstasyonu'}
                 </h3>
                 <div style={{ fontSize: '14px', lineHeight: '1.8' }}>
                   <p style={{ margin: '5px 0' }}>
@@ -409,7 +351,7 @@ const MapView = ({
                 icon={createCustomIcon('#4caf50')} // Green for start
               >
                 <Popup>
-                  <div><strong>Başlangıç</strong></div>
+                  <div><strong>🚩 Başlangıç</strong></div>
                 </Popup>
               </Marker>
             ))}
@@ -420,7 +362,7 @@ const MapView = ({
                 icon={createCustomIcon('#f44336')} // Red for end
               >
                 <Popup>
-                  <div><strong>Varış</strong></div>
+                  <div><strong>🏁 Varış</strong></div>
                 </Popup>
               </Marker>
             ))}
@@ -450,7 +392,7 @@ const MapView = ({
           fontSize: '15px',
           color: '#00d4ff',
           letterSpacing: '0.5px'
-        }}>Legend</div>
+        }}>📍 Legend</div>
 
         {showTraffic && (
           <div style={{
@@ -462,7 +404,7 @@ const MapView = ({
             borderRadius: '6px',
             border: '1px solid rgba(0, 212, 255, 0.2)'
           }}>
-            <span style={{ marginRight: '8px', fontSize: '16px' }}>Traffic</span>
+            <span style={{ marginRight: '8px', fontSize: '16px' }}>🚦</span>
             <span style={{ color: '#00ff88', fontWeight: '600' }}>Trafik Katmanı Aktif</span>
           </div>
         )}
@@ -478,6 +420,27 @@ const MapView = ({
           }}></div>
           <span>Charging Stations</span>
         </div>
+        {userLocation && (
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            marginBottom: '8px',
+            padding: '6px',
+            background: 'rgba(0, 255, 136, 0.15)',
+            borderRadius: '6px',
+            border: '1px solid rgba(0, 255, 136, 0.3)'
+          }}>
+            <div style={{
+              width: '20px',
+              height: '20px',
+              backgroundColor: '#00ff88',
+              borderRadius: '50%',
+              marginRight: '10px',
+              border: '2px solid white'
+            }}></div>
+            <span style={{ color: '#00ff88', fontWeight: '600' }}>Your Location</span>
+          </div>
+        )}
         {route && route.charging_stops && route.charging_stops.length > 0 && (
           <div style={{ display: 'flex', alignItems: 'center', marginBottom: '5px' }}>
             <div style={{
@@ -528,7 +491,7 @@ const MapView = ({
             alignItems: 'center',
             gap: '8px'
           }}>
-            <span>Location</span>
+            <span>📍</span>
             <span>Rota Özeti</span>
             {route.route_summary?.with_traffic && (
               <span style={{
@@ -540,7 +503,7 @@ const MapView = ({
                 fontWeight: '700',
                 marginLeft: 'auto'
               }}>
-                Canlı Trafik
+                🚦 Canlı Trafik
               </span>
             )}
           </div>
@@ -563,7 +526,7 @@ const MapView = ({
                 borderRadius: '8px',
                 border: '1px solid rgba(255, 68, 68, 0.3)'
               }}>
-                <span style={{ color: '#ff6b6b' }}>Trafik Gecikmesi:</span>
+                <span style={{ color: '#ff6b6b' }}>⚠️ Trafik Gecikmesi:</span>
                 <strong style={{ color: '#ff4444' }}>+{Math.round(route.route_summary?.traffic_delay_minutes)} dk</strong>
               </div>
             )}

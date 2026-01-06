@@ -5,12 +5,8 @@ import RouteForm from './components/RouteForm'
 import { getFavorites, toggleFavorite, isFavorite } from './utils/favorites'
 import toast, { Toaster } from 'react-hot-toast'
 import './modern-styles.css'
-import { AuthProvider, useAuth } from './context/AuthContext'
-import { AuthModal } from './components/AuthModals'
-import NavigationMode from './components/NavigationMode'
 
-// Separate component for the main app content to use AuthContext
-const AppContent = () => {
+export default function App(){
   const [vehicles, setVehicles] = useState([])
   const [filteredVehicles, setFilteredVehicles] = useState([])
   const [loading, setLoading] = useState(false)
@@ -18,18 +14,13 @@ const AppContent = () => {
   const [chatMessages, setChatMessages] = useState([])
   const [currentMessage, setCurrentMessage] = useState('')
   const [selectedVehicle, setSelectedVehicle] = useState(null)
-  const [viewMode, setViewMode] = useState('map') // 'map', 'list', 'route', 'favorites', 'navigation'
+  const [viewMode, setViewMode] = useState('map') // 'map', 'list', 'route', 'favorites'
   const [chargingStations, setChargingStations] = useState([])
   const [stationsLoading, setStationsLoading] = useState(false)
   const [powerFilter, setPowerFilter] = useState('all') // 'all', 'fast', 'normal'
   const [favorites, setFavorites] = useState([])
   const [showFavoritesModal, setShowFavoritesModal] = useState(false)
-
-  // Auth State
-  const { user, isAuthenticated, logout } = useAuth()
-  const [showAuthModal, setShowAuthModal] = useState(false)
-  const [authType, setAuthType] = useState('login')
-
+  
   // Route planning state
   const [routeForm, setRouteForm] = useState({
     start_lat: '',
@@ -42,11 +33,11 @@ const AppContent = () => {
   const [routePlanning, setRoutePlanning] = useState(false)
 
   // Load vehicles on mount
-  useEffect(() => {
+  useEffect(()=>{
     console.log('App mounted, fetching vehicles...')
     setLoading(true)
     getVehicles()
-      .then(v => {
+      .then(v=>{
         console.log('Vehicles received:', v)
         setVehicles(v || [])
         setFilteredVehicles(v || [])
@@ -54,11 +45,11 @@ const AppContent = () => {
         // Load favorites
         setFavorites(getFavorites())
       })
-      .catch(err => {
+      .catch(err=>{
         console.error('Vehicle fetch error:', err)
         setLoading(false)
       })
-  }, [])
+  },[])
 
   // Load charging stations on mount
   useEffect(() => {
@@ -83,7 +74,7 @@ const AppContent = () => {
       return
     }
     const query = searchQuery.toLowerCase()
-    const filtered = vehicles.filter(v =>
+    const filtered = vehicles.filter(v => 
       (v.manufacturer || v.make || '').toLowerCase().includes(query) ||
       (v.model || '').toLowerCase().includes(query) ||
       (v.year || '').toString().includes(query)
@@ -106,14 +97,14 @@ const AppContent = () => {
   // Handle AI chat
   const handleSendMessage = async () => {
     if (!currentMessage.trim()) return
-
+    
     const userMsg = { role: 'user', content: currentMessage }
     setChatMessages(prev => [...prev, userMsg])
     setCurrentMessage('')
-
+    
     const aiMsg = { role: 'assistant', content: 'Thinking...' }
     setChatMessages(prev => [...prev, aiMsg])
-
+    
     const res = await aiChat(currentMessage)
     setChatMessages(prev => {
       const newMsgs = [...prev]
@@ -131,31 +122,31 @@ const AppContent = () => {
     // If called from RouteForm (with address), routeData will have coords
     // If called from old form (route view), use routeForm state
     const data = routeData || routeForm;
-
+    
     if (!data.start_lat || !data.start_lon || !data.end_lat || !data.end_lon) {
       toast.error('Lütfen başlangıç ve varış noktalarını belirtin')
       return
     }
-
+    
     // Handle vehicle selection from both sources
     const vehicleId = data.vehicle_id || data.selected_vehicle_id;
     if (!vehicleId && !routeData) {
       toast.error('Lütfen bir araç seçin')
       return
     }
-
+    
     const vehicle = vehicles.find(v => v.id === vehicleId || v.id === routeForm.selected_vehicle_id);
     if (!vehicle && !data.vehicle_range_km) {
       toast.error('Araç bulunamadı')
       return
     }
-
+    
     setRoutePlanning(true)
     setRouteResult(null)
-
+    
     // Show loading toast
     const loadingToast = toast.loading('Rota hesaplanıyor...')
-
+    
     try {
       const result = await planRoute({
         start_lat: parseFloat(data.start_lat),
@@ -168,43 +159,19 @@ const AppContent = () => {
         min_charge_percent: 20,
         preferred_charge_percent: 80
       })
-
+      
       console.log('Route result:', result)
       setRouteResult(result)
-
+      
       // Dismiss loading and show success
       toast.dismiss(loadingToast)
-
+      
       if (result.success) {
         const numStops = result.route_summary?.number_of_stops || result.charging_stops?.length || 0
         const distance = result.route_summary?.total_distance_km || 0
-        toast.success(`Rota hazır! ${distance.toFixed(0)} km - ${numStops} şarj durağı`, {
+        toast.success(`✅ Rota hazır! ${distance.toFixed(0)} km - ${numStops} şarj durağı`, {
           duration: 5000,
         })
-        // Ask if user wants to start navigation immediately
-        toast((t) => (
-          <span>
-            Rota hazır!
-            <button
-              onClick={() => {
-                toast.dismiss(t.id)
-                setViewMode('navigation')
-              }}
-              style={{
-                marginLeft: '8px',
-                padding: '4px 8px',
-                background: '#00d4ff',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer'
-              }}
-            >
-              Navigasyonu Başlat 🚀
-            </button>
-          </span>
-        ), { duration: 6000 })
-
         setViewMode('map')
       } else {
         toast.error('Rota hesaplanamadı: ' + (result.message || 'Bilinmeyen hata'))
@@ -222,11 +189,11 @@ const AppContent = () => {
   const handleToggleFavorite = (vehicleId) => {
     const newStatus = toggleFavorite(vehicleId)
     setFavorites(getFavorites())
-
+    
     // Show toast notification
     const vehicle = vehicles.find(v => v.id === vehicleId)
     const vehicleName = vehicle ? `${vehicle.manufacturer} ${vehicle.model}` : 'Araç'
-
+    
     if (newStatus) {
       toast.success(`${vehicleName} favorilere eklendi! ❤️`, {
         duration: 3000,
@@ -237,7 +204,7 @@ const AppContent = () => {
         duration: 3000,
       })
     }
-
+    
     return newStatus
   }
 
@@ -248,7 +215,7 @@ const AppContent = () => {
 
   return (
     <div className="app-container">
-      <Toaster
+      <Toaster 
         position="top-right"
         toastOptions={{
           duration: 4000,
@@ -273,24 +240,16 @@ const AppContent = () => {
           },
         }}
       />
-
-      {/* Navigation Mode Overlay */}
-      {viewMode === 'navigation' && (
-        <NavigationMode
-          route={routeResult}
-          onEndNavigation={() => setViewMode('map')}
-        />
-      )}
-
+      
       {/* Header */}
       <header className="app-header">
         <div className="header-left">
-          <video
-            src="/logo.mp4"
-            className="app-logo"
-            autoPlay
-            loop
-            muted
+          <video 
+            src="/logo.mp4" 
+            className="app-logo" 
+            autoPlay 
+            loop 
+            muted 
             playsInline
             onClick={() => {
               setViewMode('map')
@@ -298,19 +257,19 @@ const AppContent = () => {
               setSearchQuery('')
               setCurrentMessage('')
               setPowerFilter('all')
-              toast.success('Ana sayfaya döndünüz')
+              toast.success('🏠 Ana sayfaya döndünüz')
             }}
             style={{ cursor: 'pointer' }}
           />
           <div className="status-indicators">
             <span className="status-dot green"></span>
             <span className="status-text">Backend Connected</span>
-            <span className="status-dot" style={{ backgroundColor: loading ? '#ffc107' : '#28a745' }}></span>
+            <span className="status-dot" style={{backgroundColor: loading ? '#ffc107' : '#28a745'}}></span>
             <span className="status-text">{vehicles.length} Vehicles</span>
           </div>
         </div>
         <div className="header-right">
-          <button
+          <button 
             className={`favorites-btn ${showFavoritesModal ? 'active' : ''}`}
             onClick={() => setShowFavoritesModal(!showFavoritesModal)}
             title="Favorilerim"
@@ -320,45 +279,24 @@ const AppContent = () => {
               <span className="favorites-badge">{favorites.length}</span>
             )}
           </button>
-          <button
-            className={viewMode === 'map' ? 'active' : ''}
+          <button 
+            className={viewMode === 'map' ? 'active' : ''} 
             onClick={() => setViewMode('map')}
           >
             Map
           </button>
-          <button
-            className={viewMode === 'list' ? 'active' : ''}
+          <button 
+            className={viewMode === 'list' ? 'active' : ''} 
             onClick={() => setViewMode('list')}
           >
             List
           </button>
-          <button
-            className={viewMode === 'route' ? 'active' : ''}
+          <button 
+            className={viewMode === 'route' ? 'active' : ''} 
             onClick={() => setViewMode('route')}
           >
             Route
           </button>
-
-          {/* Auth Buttons */}
-          {isAuthenticated ? (
-            <button
-              className="auth-btn-header"
-              onClick={logout}
-              title="Çıkış Yap"
-            >
-              {user?.username || user?.email || 'Hesabım'} (Çıkış)
-            </button>
-          ) : (
-            <button
-              className="auth-btn-header"
-              onClick={() => {
-                setAuthType('login')
-                setShowAuthModal(true)
-              }}
-            >
-              Giriş Yap
-            </button>
-          )}
         </div>
       </header>
 
@@ -371,11 +309,11 @@ const AppContent = () => {
               <div className="map-sidebar">
                 {/* AI Chat Section */}
                 <div className="chat-section-compact">
-                  <h4>EV Asistan</h4>
+                  <h4>🤖 EV Asistan</h4>
                   <div className="chat-messages-compact">
                     {chatMessages.length === 0 ? (
                       <div className="chat-welcome">
-                        Merhaba! Size elektrikli araç seçiminde yardımcı olabilirim.
+                        Merhaba! Size elektrikli araç seçiminde yardımcı olabilirim. 🚗⚡
                       </div>
                     ) : (
                       chatMessages.map((msg, i) => (
@@ -394,22 +332,22 @@ const AppContent = () => {
                       onChange={(e) => setCurrentMessage(e.target.value)}
                       onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
                     />
-                    <button onClick={handleSendMessage}>Send</button>
+                    <button onClick={handleSendMessage}>📤</button>
                   </div>
                 </div>
 
                 {/* Route Planning Form */}
-                <RouteForm
+                <RouteForm 
                   vehicles={vehicles}
                   onPlanRoute={handlePlanRoute}
                   isPlanning={routePlanning}
                 />
-
+                
                 {/* Charging station filter */}
                 <div className="station-filter-card">
-                  <h4>Şarj İstasyonları</h4>
-                  <select
-                    value={powerFilter}
+                  <h4>⚡ Şarj İstasyonları</h4>
+                  <select 
+                    value={powerFilter} 
                     onChange={(e) => setPowerFilter(e.target.value)}
                     className="filter-select"
                   >
@@ -423,7 +361,7 @@ const AppContent = () => {
 
               {/* Map */}
               <div className="map-main">
-                <MapView
+                <MapView 
                   vehicles={filteredVehicles}
                   selectedVehicle={selectedVehicle}
                   chargingStations={getFilteredStations()}
@@ -438,7 +376,7 @@ const AppContent = () => {
                 />
                 {selectedVehicle && (
                   <div className="selected-vehicle-overlay">
-                    <button
+                    <button 
                       className="close-btn"
                       onClick={() => setSelectedVehicle(null)}
                     >
@@ -459,18 +397,18 @@ const AppContent = () => {
           {viewMode === 'list' && (
             <div className="list-view">
               <h2>Vehicle Database</h2>
-
+              
               {/* Arama Çubuğu */}
               <div className="vehicle-search-bar">
                 <input
                   type="text"
-                  placeholder="Araç ara... (marka, model, yıl)"
+                  placeholder="🔍 Araç ara... (marka, model, yıl)"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="search-input"
                 />
                 {searchQuery && (
-                  <button
+                  <button 
                     className="clear-search-btn"
                     onClick={() => setSearchQuery('')}
                   >
@@ -522,7 +460,7 @@ const AppContent = () => {
           {viewMode === 'route' && (
             <div className="route-view">
               <h2>Rota Planlama</h2>
-
+              
               <div className="route-form">
                 <div className="form-section">
                   <h3>Başlangıç Noktası</h3>
@@ -532,7 +470,7 @@ const AppContent = () => {
                       step="0.000001"
                       placeholder="Enlem (Latitude)"
                       value={routeForm.start_lat}
-                      onChange={(e) => setRouteForm({ ...routeForm, start_lat: e.target.value })}
+                      onChange={(e) => setRouteForm({...routeForm, start_lat: e.target.value})}
                       className="route-input"
                     />
                     <input
@@ -540,18 +478,18 @@ const AppContent = () => {
                       step="0.000001"
                       placeholder="Boylam (Longitude)"
                       value={routeForm.start_lon}
-                      onChange={(e) => setRouteForm({ ...routeForm, start_lon: e.target.value })}
+                      onChange={(e) => setRouteForm({...routeForm, start_lon: e.target.value})}
                       className="route-input"
                     />
                   </div>
                   <div className="quick-locations">
-                    <button onClick={() => setRouteForm({ ...routeForm, start_lat: '41.0082', start_lon: '28.9784' })}>
+                    <button onClick={() => setRouteForm({...routeForm, start_lat: '41.0082', start_lon: '28.9784'})}>
                       İstanbul
                     </button>
-                    <button onClick={() => setRouteForm({ ...routeForm, start_lat: '39.9334', start_lon: '32.8597' })}>
+                    <button onClick={() => setRouteForm({...routeForm, start_lat: '39.9334', start_lon: '32.8597'})}>
                       Ankara
                     </button>
-                    <button onClick={() => setRouteForm({ ...routeForm, start_lat: '38.4237', start_lon: '27.1428' })}>
+                    <button onClick={() => setRouteForm({...routeForm, start_lat: '38.4237', start_lon: '27.1428'})}>
                       İzmir
                     </button>
                   </div>
@@ -565,7 +503,7 @@ const AppContent = () => {
                       step="0.000001"
                       placeholder="Enlem (Latitude)"
                       value={routeForm.end_lat}
-                      onChange={(e) => setRouteForm({ ...routeForm, end_lat: e.target.value })}
+                      onChange={(e) => setRouteForm({...routeForm, end_lat: e.target.value})}
                       className="route-input"
                     />
                     <input
@@ -573,18 +511,18 @@ const AppContent = () => {
                       step="0.000001"
                       placeholder="Boylam (Longitude)"
                       value={routeForm.end_lon}
-                      onChange={(e) => setRouteForm({ ...routeForm, end_lon: e.target.value })}
+                      onChange={(e) => setRouteForm({...routeForm, end_lon: e.target.value})}
                       className="route-input"
                     />
                   </div>
                   <div className="quick-locations">
-                    <button onClick={() => setRouteForm({ ...routeForm, end_lat: '41.0082', end_lon: '28.9784' })}>
+                    <button onClick={() => setRouteForm({...routeForm, end_lat: '41.0082', end_lon: '28.9784'})}>
                       İstanbul
                     </button>
-                    <button onClick={() => setRouteForm({ ...routeForm, end_lat: '39.9334', end_lon: '32.8597' })}>
+                    <button onClick={() => setRouteForm({...routeForm, end_lat: '39.9334', end_lon: '32.8597'})}>
                       Ankara
                     </button>
-                    <button onClick={() => setRouteForm({ ...routeForm, end_lat: '38.4237', end_lon: '27.1428' })}>
+                    <button onClick={() => setRouteForm({...routeForm, end_lat: '38.4237', end_lon: '27.1428'})}>
                       İzmir
                     </button>
                   </div>
@@ -594,7 +532,7 @@ const AppContent = () => {
                   <h3>Araç Seçimi</h3>
                   <select
                     value={routeForm.selected_vehicle_id || ''}
-                    onChange={(e) => setRouteForm({ ...routeForm, selected_vehicle_id: parseInt(e.target.value) })}
+                    onChange={(e) => setRouteForm({...routeForm, selected_vehicle_id: parseInt(e.target.value)})}
                     className="vehicle-select"
                   >
                     <option value="">Bir araç seçin...</option>
@@ -658,20 +596,20 @@ const AppContent = () => {
                               </div>
                               <div className="stop-details">
                                 <div className="detail-row">
-                                  <span>{stop.city}</span>
-                                  <span>Power: {stop.charging_power_kw}kW</span>
+                                  <span>📍 {stop.city}</span>
+                                  <span>⚡ {stop.charging_power_kw}kW</span>
                                 </div>
                                 <div className="detail-row">
-                                  <span>Varış: %{stop.battery_on_arrival.toFixed(0)}</span>
-                                  <span>Ayrılış: %{stop.battery_after_charge}</span>
+                                  <span>🔋 Varış: %{stop.battery_on_arrival.toFixed(0)}</span>
+                                  <span>🔋 Ayrılış: %{stop.battery_after_charge}</span>
                                 </div>
                                 <div className="detail-row">
-                                  <span>{stop.charging_time_minutes.toFixed(0)} dakika</span>
-                                  <span>Cost: ${stop.estimated_cost.toFixed(2)}</span>
+                                  <span>⏱️ {stop.charging_time_minutes.toFixed(0)} dakika</span>
+                                  <span>💰 ${stop.estimated_cost.toFixed(2)}</span>
                                 </div>
                                 <div className="detail-row">
-                                  <span>{stop.distance_from_start.toFixed(0)}km (toplam)</span>
-                                  <span>{stop.distance_to_destination.toFixed(0)}km (kalan)</span>
+                                  <span>📏 {stop.distance_from_start.toFixed(0)}km (toplam)</span>
+                                  <span>🎯 {stop.distance_to_destination.toFixed(0)}km (kalan)</span>
                                 </div>
                               </div>
                             </div>
@@ -703,7 +641,7 @@ const AppContent = () => {
         <div className="favorites-modal-overlay" onClick={() => setShowFavoritesModal(false)}>
           <div className="favorites-modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h2>Favori Araçlarım</h2>
+              <h2>❤️ Favori Araçlarım</h2>
               <button className="close-modal-btn" onClick={() => setShowFavoritesModal(false)}>
                 ×
               </button>
@@ -718,7 +656,7 @@ const AppContent = () => {
                 <div className="favorites-grid">
                   {getFavoriteVehicles().map((v, i) => (
                     <div key={i} className="favorite-card">
-                      <button
+                      <button 
                         className="remove-favorite-btn"
                         onClick={() => handleToggleFavorite(v.id)}
                         title="Favorilerden çıkar"
@@ -732,10 +670,10 @@ const AppContent = () => {
                       }}>
                         <h3>{v.manufacturer || v.make} {v.model}</h3>
                         <div className="favorite-specs">
-                          <span>{v.year}</span>
-                          <span>Range: {v.range_km}km</span>
-                          <span>Battery: {v.battery_capacity_kwh}kWh</span>
-                          <span>€{v.price_usd?.toLocaleString()}</span>
+                          <span>📅 {v.year}</span>
+                          <span>⚡ {v.range_km}km</span>
+                          <span>🔋 {v.battery_capacity_kwh}kWh</span>
+                          <span>💰 €{v.price_usd?.toLocaleString()}</span>
                         </div>
                       </div>
                     </div>
@@ -746,22 +684,6 @@ const AppContent = () => {
           </div>
         </div>
       )}
-
-      {/* Auth Modal */}
-      <AuthModal
-        isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
-        type={authType}
-        onSwitchType={() => setAuthType(authType === 'login' ? 'register' : 'login')}
-      />
     </div>
-  )
-}
-
-export default function App() {
-  return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
   )
 }

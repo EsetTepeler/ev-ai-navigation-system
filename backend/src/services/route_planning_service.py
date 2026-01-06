@@ -19,7 +19,7 @@ from charging_station_service import charging_station_service
 logger = logging.getLogger(__name__)
 
 # TomTom API Configuration
-TOMTOM_API_KEY = "NilqB0Tl3r0T1dMLMx277kjXS6d0IY4s"
+TOMTOM_API_KEY = "w9xr4Dka9SWOvK8QhPy5tSTvAS9lj3Cq"
 TOMTOM_ROUTING_API = "https://api.tomtom.com/routing/1/calculateRoute/"
 
 class RoutePlanningService:

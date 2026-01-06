@@ -41,52 +41,10 @@ export async function getChargingStations(filters = {}) {
 
 export async function planRoute(routeData) {
   try {
-    const params = new URLSearchParams()
-    params.append('start_lat', routeData.start_lat)
-    params.append('start_lon', routeData.start_lon)
-    params.append('end_lat', routeData.end_lat)
-    params.append('end_lon', routeData.end_lon)
-    params.append('vehicle_range_km', routeData.vehicle_range_km)
-    params.append('battery_capacity_kwh', routeData.battery_capacity_kwh)
-    if (routeData.current_battery_percent) params.append('current_battery_percent', routeData.current_battery_percent)
-    if (routeData.min_charge_percent) params.append('min_charge_percent', routeData.min_charge_percent)
-    if (routeData.preferred_charge_percent) params.append('preferred_charge_percent', routeData.preferred_charge_percent)
-
-    const response = await axios.post(`${base}/api/navigation/simple-route?${params.toString()}`)
+    const response = await axios.post(`${base}/api/navigation/simple-route`, routeData)
     return response.data
   } catch (error) {
     console.error('Route planning error:', error)
     throw error
-  }
-}
-
-export async function loginUser(credentials) {
-  try {
-    const res = await axios.post(`${base}/api/auth/login`, credentials)
-    return res.data
-  } catch (err) {
-    console.error('Login error:', err)
-    throw err.response?.data || err
-  }
-}
-
-export async function registerUser(userData) {
-  try {
-    const res = await axios.post(`${base}/api/auth/register`, userData)
-    return res.data
-  } catch (err) {
-    console.error('Register error:', err)
-    throw err.response?.data || err
-  }
-}
-
-export async function getCurrentUser(token) {
-  try {
-    const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {}
-    const res = await axios.get(`${base}/api/auth/me`, config)
-    return res.data
-  } catch (err) {
-    console.error('Get current user error:', err)
-    throw err.response?.data || err
   }
 }

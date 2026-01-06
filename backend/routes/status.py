@@ -1,4 +1,4 @@
-"""Status check endpoints for database, Redis, and Qdrant services."""
+"""Status check endpoints for database and Redis services."""
 
 # Standard library imports
 import logging
@@ -55,25 +55,3 @@ async def get_redis_status():
         raise RedisException(
             message="Failed to get Redis status", details={"error": str(e)}
         )
-
-
-@router.get("/qdrant-status")
-async def get_qdrant_status():
-    """
-    Get Qdrant vector database status.
-
-    Returns:
-        Qdrant connection status
-    """
-    return {"status": "disabled", "message": "Qdrant currently disabled"}
-
-
-@router.get("/qdrant-stats")
-async def get_qdrant_stats():
-    """
-    Get Qdrant collection statistics.
-
-    Returns:
-        Collection statistics or unavailable message
-    """
-    return {"status": "disabled", "message": "Qdrant currently disabled"}
