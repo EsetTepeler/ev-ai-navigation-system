@@ -49,6 +49,14 @@ EV AI Navigation System, Türkiye genelinde elektrikli araç kullanıcıları i�
 - **Rota Görselleştirme**: Başlangıç-bitiş arası mavi çizgi ile rota
 - **Şarj Durakları**: Rota üzerinde otomatik şarj istasyonu önerileri
 - **Navigasyon Modu**: Adım adım yönlendirme ile sürüş deneyimi
+- **Gerçek Zamanlı Trafik**: TomTom API ile canlı trafik verisi ve gecikme hesabı
+- **Nominatim Geocoding**: OpenStreetMap adres çözümleme
+- **Alternatif Rotalar**: Farklı şarj stratejileri ile rota seçenekleri
+- **Enerji Tüketimi Hesabı**: Rota için tahmini kWh hesaplama
+- **OSRM Waypoint Routing**: Çoklu duraklı gerçek yol verileri
+- **Haversine Mesafe Hesabı**: Kuş uçuşu mesafe algoritması
+- **Koridor Tabanlı Arama**: Rota üzerindeki istasyonları bulma
+- **Maliyet Tahmini**: Toplam seyahat maliyeti (TL cinsinden)
 
 ### ⚡ Şarj İstasyonları
 - **286+ İstasyon**: Türkiye genelinde kapsamlı kapsama
@@ -56,17 +64,100 @@ EV AI Navigation System, Türkiye genelinde elektrikli araç kullanıcıları i�
 - **Güç Seviyeleri**: 50kW - 350kW arası çeşitli seçenekler
 - **Şehir Filtreleme**: İstanbul, Ankara, İzmir ve 23+ şehir
 - **Yarıçap Araması**: Belirli konumdan km bazlı arama
+- **Güç Filtreleme**: Minimum/maksimum kW ile filtreleme
+- **İstasyon Puanlama**: Uyumluluk, hız ve mesafeye göre sıralama
+- **Şarj Süresi Tahmini**: Batarya durumuna göre dakika hesabı
+- **Ağ Bilgileri**: 4 büyük ağın detaylı özellikleri
+- **Konekör Bilgileri**: 5 tip konektör ve uyumlu araçlar
+- **Fiyatlandırma Karşılaştırması**: Ağ bazlı kWh fiyatları
+- **Maliyet Tahmini**: %20-80 şarj maliyeti örnekleri (TL/USD)
 
 ### 🚙 Araç Veritabanı
 - **384+ EV Modeli**: Tüm büyük markaların elektrikli araçları
 - **Detaylı Spesifikasyonlar**: Batarya kapasitesi, menzil, şarj hızı
 - **Akıllı Arama**: AI destekli araç önerileri
 - **Fuzzy Matching**: Yazım hatalarına toleranslı arama
+- **Favori Araçlar**: Beğenilen araçları kaydetme ve listeleme
+- **Araç Karşılaştırma**: 5'e kadar aracı yan yana karşılaştırma
+  - Menzil, fiyat, şarj hızı metrikleri
+  - Verimlilik ve değer kazananı analizi
+- **Kullanım Senaryoları**: Öneri sistemi
+  - `daily_commute`: Günlük kullanım için verimli araçlar
+  - `long_distance`: Uzun yol için yüksek menzil
+  - `family`: Aile için SUV önerileri
+  - `luxury`: Premium segment
+  - `budget`: Bütçe dostu seçenekler
+- **Üretici/Kategori Listeleme**: Marka ve tip bazlı filtreleme
 
 ### 🤖 AI Asistan
 - **Doğal Dil**: Türkçe/İngilizce soru-cevap
 - **Bağlam Farkındalığı**: Araç ve istasyon bilgisi ile zenginleştirilmiş yanıtlar
 - **Akıllı Öneriler**: Kullanıcı tercihlerine göre araç önerileri
+- **Sohbet Önerileri**: Otomatik takip sorusu önerileri
+- **Konuşma Başlatıcıları**: Hazır soru şablonları
+
+### 🧠 AI Agent Sistemi
+- **RouteOptimizerAgent**: Akıllı şarj durağı planlama
+  - Enerji gereksinimi analizi
+  - Optimal şarj noktası seçimi
+  - Rüte içgörüleri (AI destekli)
+- **GeographicAgent**: Adres işleme ve haritalama
+  - AI ile adres anlamlandırma
+  - Alternatif adres önerileri
+  - Rota haritası üretimi
+  - Polyline encoding
+
+### ⚙️ Rota Tercihleri
+- **Otoyol Kaçınma**: Otoyollardan kaçınma seçeneği
+- **Hızlı Şarj Tercihi**: Yüksek güçlü istasyonlara öncelik
+- **Şarj Ağı Seçimi**: Tercih edilen ağları belirleyebilme
+- **Maksimum Sapma**: Şarj için kabul edilebilir sapma mesafesi
+- **Minimum Şarj Gücü**: kW eşik değeri belirleme
+
+### 📊 Detaylı Araç Spesifikasyonları
+- **Şarj Eğrisi**: SOC'ye göre şarj gücü haritası
+- **Konektör Tipleri**: CCS1, CCS2, CHAdeMO, Tesla, Type1, Type2
+- **Kategori Filtreleme**: Sedan, SUV, Hatchback, Truck, Van, Sports
+- **Performans Verileri**: 0-100 hızlanma, maksimum hız, sürüklenme katsayısı
+- **Fiziksel Boyutlar**: Boy, en, yükseklik, ağırlık
+- **Otonom Sürüş Seviyesi**: Level 0-5 desteği
+
+### 🔐 Kullanıcı Sistemi
+- **JWT Authentication**: Güvenli token tabanlı kimlik doğrulama
+- **Bcrypt Password Hashing**: Endüstri standardı şifre güvenliği
+- **Refresh Token**: Oturum yenileme desteği
+- **S3 User Storage**: Bulut tabanlı kullanıcı veri depolama
+- **AuthContext (React)**: Frontend oturum yönetimi
+  - Login/Register/Logout işlevleri
+  - LocalStorage token saklama
+  - Otomatik oturum kontrolu
+- **Toast Bildirimleri**: react-hot-toast ile kullanıcı geri bildirimi
+
+### ⭐ Favoriler
+- **Favori Rotalar**: Sık kullanılan rotaları kaydetme/yönetme
+- **Favori Araçlar**: LocalStorage ile araç favorileme
+  - Toggle/Add/Remove/Clear işlevleri
+  - Favori sayısı takibi
+
+### 📍 Konum Servisleri
+- **Tarayıcı Geolocation API**: Gerçek konum tespiti
+- **Konum İzleme**: Canlı konum takibi (watchPosition)
+- **Doğruluk Göstergesi**: Metre cinsinden GPS doğruluğu
+- **Hata Yönetimi**: Türkçe hata mesajları (izin, timeout, vb.)
+
+### 💾 Cache ve Performans
+- **Redis Cloud + Local Fallback**: Yüksek erişilebilirlik
+- **Araç Cache**: Veritabanı sorgularını azaltma
+- **Rota Cache**: Hesaplanmış rotaları saklama
+- **AI Yanıt Cache**: Tekrarlayan sorular için hızlı yanıt
+- **Session Yönetimi**: Kullanıcı oturumlarını Redis'te saklama
+
+### 🐳 DevOps
+- **Docker Compose**: Tek komutla tüm servisleri başlatma
+- **PostgreSQL 15**: Container içinde veritabanı
+- **Redis 7 Alpine**: Hafif cache container
+- **Health Check**: PostgreSQL sağlık kontrolleri
+- **Volume Persistence**: Veri kalıcılığı
 
 ---
 
@@ -77,9 +168,14 @@ EV AI Navigation System, Türkiye genelinde elektrikli araç kullanıcıları i�
 |-----------|----------|
 | **FastAPI** | Modern Python web framework |
 | **PostgreSQL** | 384+ araç modeli veritabanı |
-| **Redis** | Cache ve session yönetimi |
-| **OpenAI/OpenRouter** | GPT-4o-mini AI entegrasyonu |
+| **Redis Cloud** | Dağıtık cache ve session yönetimi |
+| **Google Gemini 2.0 Flash** | Birincil AI motoru (hızlı ve akıllı) |
+| **OpenRouter** | Yedek AI (GPT-4o-mini, Llama, vb.) |
+| **TomTom API** | Gerçek zamanlı trafik ve rota |
 | **OSRM** | Açık kaynak rota motoru |
+| **JWT + Bcrypt** | Authentication ve güvenlik |
+| **AWS S3** | Kullanıcı veri depolama |
+| **Pydantic v2** | Veri validasyonu ve serialization |
 
 ### Frontend
 | Teknoloji | Açıklama |
@@ -88,6 +184,7 @@ EV AI Navigation System, Türkiye genelinde elektrikli araç kullanıcıları i�
 | **Vite** | Hızlı build ve dev server |
 | **Leaflet** | İnteraktif harita kütüphanesi |
 | **Axios** | HTTP istemcisi |
+| **Context API** | State yönetimi (AuthContext) |
 
 ### DevOps
 | Teknoloji | Açıklama |
@@ -409,22 +506,26 @@ ev-ai-navigation-system/
 - [x] React frontend (Vite)
 - [x] Leaflet harita entegrasyonu
 - [x] Türkiye geneli şarj istasyonları (286+)
-- [x] OSRM rota hesaplama
+- [x] OSRM + TomTom rota hesaplama
 - [x] Şarj durağı optimizasyonu
 - [x] Navigasyon modu
 - [x] Araç arama (fuzzy matching)
 - [x] Docker containerization
+- [x] **TomTom gerçek zamanlı trafik verisi entegrasyonu**
+- [x] **JWT Authentication (bcrypt şifreleme)**
+- [x] **Kullanıcı hesap sistemi (kayıt/giriş)**
+- [x] **Favori rotalar kaydetme/yönetme**
+- [x] **S3 bulut depolama entegrasyonu**
+- [x] **Nominatim geocoding (adres çözümleme)**
 
 ### 🔄 Devam Eden
 - [ ] Gerçek zamanlı şarj istasyonu müsaitliği
-- [ ] Kullanıcı hesap sistemi
-- [ ] Rota geçmişi kaydetme
 
 ### 📋 Planlanan
 - [ ] Mobil uygulama (React Native)
-- [ ] Trafik verisi entegrasyonu
 - [ ] Hava durumu etkisi hesaplaması
 - [ ] Çok dilli destek genişletmesi
+- [ ] Rota geçmişi analitikleri
 
 ---
 
@@ -466,5 +567,5 @@ Sorularınız için issue açabilir veya pull request gönderebilirsiniz.
 ---
 
 <div align="center">
-  <sub>Built with ❤️ for the EV community in Turkey</sub>
+  <sub>Built for the EV community in Turkey</sub>
 </div>
