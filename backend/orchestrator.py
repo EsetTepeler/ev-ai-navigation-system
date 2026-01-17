@@ -463,13 +463,26 @@ async def ai_chat(chat_request: ChatMessage):
                 message="Message cannot be empty", field="message"
             )
 
-        # Fetch vehicle and charging station context for AI
-        vehicles_response = await database_service.get_all_vehicles(limit=30)
-        vehicles_list = (
-            vehicles_response.get("vehicles", [])
-            if isinstance(vehicles_response, dict)
-            else []
-        )
+        # Use CSV-loaded vehicles (FLAT_CAR_MODELS) for AI context
+        from data.car_models.ev_models import FLAT_CAR_MODELS
+
+        # Format vehicles for AI context
+        vehicles_list = []
+        for v in FLAT_CAR_MODELS[:30]:  # Top 30 vehicles
+            vehicles_list.append(
+                {
+                    "manufacturer": v.get("manufacturer", v.get("make", "")),
+                    "model": v.get("model", ""),
+                    "year": v.get("year", 2024),
+                    "range_km": v.get("range_km", v.get("epa_range_km", 0)),
+                    "battery_capacity_kwh": v.get(
+                        "battery_capacity_kwh", v.get("usable_battery_kwh", 0)
+                    ),
+                    "charge_speed_kwh": v.get(
+                        "charge_speed_kwh", v.get("max_dc_charging_kw", 0)
+                    ),
+                }
+            )
 
         # Get charging stations
         charging_stations = charging_station_service.get_all_stations()
@@ -478,7 +491,7 @@ async def ai_chat(chat_request: ChatMessage):
         context = {
             "vehicles": vehicles_list,
             "charging_stations": charging_stations,
-            "total_vehicles": len(vehicles_list),
+            "total_vehicles": len(FLAT_CAR_MODELS),
             "total_stations": len(charging_stations),
         }
 

@@ -193,10 +193,10 @@ const MapView = ({
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
 
-          {/* Traffic Layer - OpenStreetMap with traffic simulation overlay */}
+          {/* Traffic Layer - TomTom Traffic Overlay */}
           {showTraffic && (
             <TileLayer
-              url="https://{s}.api.tomtom.com/traffic/map/4/tile/flow/relative/{z}/{x}/{y}.png?key=w9xr4Dka9SWOvK8QhPy5tSTvAS9lj3Cq"
+              url={`https://{s}.api.tomtom.com/traffic/map/4/tile/flow/relative/{z}/{x}/{y}.png?key=${import.meta.env.VITE_TOMTOM_API_KEY || ''}`}
               attribution='Traffic data &copy; <a href="https://www.tomtom.com">TomTom</a>'
               opacity={0.6}
               zIndex={1000}
